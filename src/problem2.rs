@@ -1,11 +1,11 @@
 use std::fs;
 use substring::Substring;
 
-pub(crate) fn part1() {
+pub(crate) fn problem2() {
     let contents = fs::read_to_string("inputs/input2.txt")
         .expect("Input file missing");
 
-    #[derive(Debug, PartialEq, Eq)]
+    #[derive(Debug, PartialEq, Eq, Clone, Copy)]
     pub enum Shape {
         Rock,
         Paper,
@@ -18,6 +18,31 @@ pub(crate) fn part1() {
                 Shape::Rock=> 1,
                 Shape::Paper=> 2,
                 Shape::Scissors=> 3,
+            }
+        }
+
+        fn get_winning_shape(opponents_shape: Shape) -> Shape {
+            match opponents_shape {
+                Shape::Rock  => Shape::Paper,
+                Shape::Paper => Shape::Scissors,
+                Shape::Scissors => Shape::Rock,
+            }
+        }
+
+        fn get_losing_shape(opponents_shape: Shape) -> Shape {
+            match opponents_shape {
+                Shape::Rock  => Shape::Scissors,
+                Shape::Paper => Shape::Rock,
+                Shape::Scissors => Shape::Paper,
+            }
+        }
+
+        fn map_my_hand_specific(opponents_shape: Shape, input: &str) -> Result<Shape, &str> {
+            match input {
+                "X"  => Ok(Shape::get_losing_shape(opponents_shape)),
+                "Y"  => Ok(opponents_shape),
+                "Z"  => Ok(Shape::get_winning_shape(opponents_shape)),
+                _      => Err("Cannot map hand"),
             }
         }
 
@@ -52,19 +77,28 @@ pub(crate) fn part1() {
         }
     }
 
-    let mut sum = 0;
+    let mut sum_part_1 = 0;
+    let mut sum_part_2 = 0;
     contents.lines().for_each(| row| {
         println!("{row}");
 
         let opponent_hand: Shape = Shape::map_opponent_hand(row.substring(0, 1)).unwrap();
         let my_hand: Shape = Shape::map_my_hand(row.substring(2, 3)).unwrap();
+        let my_hand_specific: Shape = Shape::map_my_hand_specific(opponent_hand, row.substring(2, 3)).unwrap();
 
-        println!("{:?} {:?}", opponent_hand, my_hand);
+        println!("{:?} {:?} {:?}", opponent_hand, my_hand, my_hand_specific);
 
-        let score = Shape::get_my_score(opponent_hand, my_hand);
-        println!("Score : {score}");
+        let mut score = Shape::get_my_score(opponent_hand, my_hand);
+        println!("Score part 1 : {score}");
 
-        sum += score;
+        sum_part_1 += score;
+
+        score = Shape::get_my_score(opponent_hand, my_hand_specific);
+        println!("Score part 2 : {score}");
+
+        sum_part_2 += score;
     });
-    println!("Sum of scores : {sum}");
+
+    println!("Sum of scores part 1 : {sum_part_1}");
+    println!("Sum of scores part 2 : {sum_part_2}");
 }
